@@ -1,0 +1,9 @@
+apiVersion: v2
+name: svectradb
+description: A Helm chart for deploying SvectraDB vector database on Kubernetes
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+maintainers:
+  - name: Shubham Murtadak
+    email: shubham@svectradb.io

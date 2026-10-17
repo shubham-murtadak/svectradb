@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  svectradb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: svectradb:latest
+    container_name: svectradb-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - SVECTRA_DATA_DIR=/data
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - svectra_data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 512M
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8080/api/v1/health')\" || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  svectra_data:
+    name: svectra-data-volume
+    driver: local

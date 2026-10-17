@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SvectraDB | High-Performance AI Vector Database</title>
+  <meta name="description" content="Next-generation embedded and distributed vector database for AI systems, neural search, and high-dimensional embeddings.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="brand-container">
+      <div class="logo-icon" id="brandLogo">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="brand-title">SvectraDB</h1>
+      </div>
+      <span class="badge-status">
+        <span class="status-dot"></span> CLUSTER ONLINE
+      </span>
+    </div>
+
+    <div class="nav-actions">
+      <button class="btn btn-secondary" id="btnSeedData" title="Insert realistic sample collections and vectors">
+        ⚡ Seed Demo Data
+      </button>
+      <button class="btn btn-primary" id="btnOpenCreateModal">
+        + New Collection
+      </button>
+      <a href="/docs" target="_blank" class="btn btn-secondary">
+        API Docs ↗
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-container">
+
+    <!-- Top Telemetry Cards -->
+    <section class="stats-grid" aria-label="System Metrics">
+      <div class="stat-card">
+        <div class="stat-label">Total Indexed Vectors</div>
+        <div class="stat-value" id="statTotalVectors">0</div>
+        <div class="stat-meta">SIMD Accelerated</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Collections</div>
+        <div class="stat-value" id="statTotalCollections">0</div>
+        <div class="stat-meta">Isolated Namespaces</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg Query Latency</div>
+        <div class="stat-value" id="statAvgLatency">0.0 ms</div>
+        <div class="stat-meta">HNSW Logarithmic Search</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Memory Footprint</div>
+        <div class="stat-value" id="statMemory">0.0 MB</div>
+        <div class="stat-meta">WAL & Snapshot Protected</div>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs-nav" aria-label="Dashboard Tabs">
+      <button class="tab-btn active" data-tab="tabExplorer" id="btnTabExplorer">Collections Explorer</button>
+      <button class="tab-btn" data-tab="tabPlayground" id="btnTabPlayground">Vector Playground</button>
+      <button class="tab-btn" data-tab="tabVisualizer" id="btnTabVisualizer">2D Projection Visualizer</button>
+      <button class="tab-btn" data-tab="tabSdk" id="btnTabSdk">Python SDK & API</button>
+    </nav>
+
+    <!-- Tab 1: Collection Explorer -->
+    <section class="tab-content active" id="tabExplorer">
+      <div class="glass-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Active Namespaces</h2>
+        </div>
+
+        <div class="collection-pills" id="collectionsList">
+          <!-- Populated dynamically -->
+        </div>
+
+        <!-- Selected Collection Summary Bar -->
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; padding: 1rem; background: rgba(0, 0, 0, 0.25); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <div>
+            <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">TARGET COLLECTION</span>
+            <strong id="selectedCollName" style="color: var(--accent-cyan); font-family: var(--font-mono);">-</strong>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">DIMENSION</span>
+            <strong id="selectedCollDim" style="font-family: var(--font-mono);">-</strong>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">METRIC</span>
+            <strong id="selectedCollMetric" style="color: var(--accent-green); font-family: var(--font-mono);">-</strong>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">INDEX TYPE</span>
+            <strong id="selectedCollIndex" style="color: var(--accent-purple); font-family: var(--font-mono);">-</strong>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">SIZE</span>
+            <strong id="selectedCollCount" style="font-family: var(--font-mono);">0</strong>
+          </div>
+        </div>
+
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+          Select a collection above or switch to the <strong>Vector Playground</strong> tab to run approximate nearest neighbor (ANN) queries with sub-millisecond latency.
+        </p>
+      </div>
+    </section>
+
+    <!-- Tab 2: Vector Playground -->
+    <section class="tab-content" id="tabPlayground">
+      <div class="glass-panel">
+        <div class="query-grid">
+          <!-- Query Builder Column -->
+          <div>
+            <h2 class="panel-title" style="margin-bottom: 1.25rem;">Similarity Search Tester</h2>
+
+            <div class="form-group">
+              <label class="form-label" for="queryInput">Query Text (or dense vector values)</label>
+              <input type="text" class="form-control" id="queryInput" placeholder="e.g. transformer architecture or attention mechanism" value="transformer architecture">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="topKInput">Top K Neighbors: <span id="topKVal" style="color: var(--accent-cyan); font-weight: 700;">5</span></label>
+              <input type="range" class="form-control" id="topKInput" min="1" max="25" value="5" style="padding: 0;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="filterInput">Metadata Filter Expression (JSON)</label>
+              <textarea class="form-control" id="filterInput" rows="3" placeholder='{"category": {"$eq": "deep_learning"}}'></textarea>
+              <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.3rem;">
+                Supports $eq, $ne, $gt, $gte, $lt, $lte, $in, $nin, $contains, $and, $or
+              </span>
+            </div>
+
+            <button class="btn btn-primary" id="btnRunQuery" style="width: 100%; justify-content: center; padding: 0.85rem;">
+              Run Similarity Search
+            </button>
+          </div>
+
+          <!-- Query Results Column -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+              <h2 class="panel-title">Nearest Neighbors</h2>
+              <span class="score-badge" id="queryLatencyBadge">- ms</span>
+            </div>
+
+            <div class="results-container" id="queryResults">
+              <div style="color: var(--text-muted); font-size: 0.9rem; padding: 1.5rem; text-align: center; border: 1px dashed var(--border-subtle); border-radius: var(--radius-md);">
+                Click <strong>"Run Similarity Search"</strong> to explore vector matches in real time.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 3: 2D Projection Visualizer -->
+    <section class="tab-content" id="tabVisualizer">
+      <div class="glass-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Vector Space 2D PCA Cluster Map</h2>
+          <span style="font-size: 0.85rem; color: var(--text-secondary);">Real-time high-dimensional dimension reduction</span>
+        </div>
+
+        <div class="canvas-wrapper">
+          <canvas id="vectorCanvas"></canvas>
+          <div class="canvas-legend">
+            <span>● Vector Embeddings</span> | <span>Hover over any node to inspect payload</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 4: Python SDK -->
+    <section class="tab-content" id="tabSdk">
+      <div class="glass-panel">
+        <h2 class="panel-title" style="margin-bottom: 1rem;">Developer Quickstart</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 1.25rem; font-size: 0.9rem;">
+          Connect seamlessly to SvectraDB using the native Python SDK in either embedded in-process mode or remote client-server mode.
+        </p>
+
+        <h3 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--accent-cyan);">Python SDK Client</h3>
+        <pre class="code-box"><code id="pythonSnippet">import svectradb
+
+# 1. Connect to SvectraDB Server
+client = svectradb.Client(url="http://localhost:8080")
+
+# 2. Get or Create Collection
+collection = client.get_or_create_collection(
+    name="ai_papers",
+    dimension=128,
+    metric="cosine",
+    index_type="hnsw"
+)
+
+# 3. Upsert Vectors & Payloads
+collection.upsert(
+    ids=["doc1", "doc2"],
+    documents=["Attention is all you need", "SvectraDB vector engine"],
+    metadatas=[{"category": "ai", "year": 2026}, {"category": "db", "year": 2026}]
+)
+
+# 4. Search with Filter
+results = collection.query(
+    query_text="neural search",
+    top_k=5,
+    filter={"category": {"$eq": "ai"}}
+)
+
+for r in results:
+    print(r.score, r.id, r.document)</code></pre>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Create Collection Modal -->
+  <div class="modal-overlay" id="createModal">
+    <div class="modal-card">
+      <h2 style="font-size: 1.25rem; margin-bottom: 1.25rem; color: var(--text-primary);">Create New Vector Collection</h2>
+      <form id="createCollectionForm">
+        <div class="form-group">
+          <label class="form-label" for="newCollName">Collection Name</label>
+          <input type="text" class="form-control" id="newCollName" required placeholder="e.g. embeddings_v1">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="newCollDim">Vector Dimension</label>
+          <input type="number" class="form-control" id="newCollDim" required value="128" min="2" max="4096">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="newCollMetric">Distance Metric</label>
+          <select class="form-control" id="newCollMetric">
+            <option value="cosine" selected>Cosine Similarity</option>
+            <option value="euclidean">Euclidean Distance (L2)</option>
+            <option value="dot">Dot Product (Inner Product)</option>
+            <option value="manhattan">Manhattan Distance (L1)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="newCollIndex">Indexing Engine</label>
+          <select class="form-control" id="newCollIndex">
+            <option value="hnsw" selected>HNSW (Hierarchical Navigable Small World)</option>
+            <option value="flat">Flat (Exact Brute-Force)</option>
+            <option value="ivf">IVF-Flat (Inverted File Index)</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btnCancelCreate">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Namespace</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
