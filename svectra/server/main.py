@@ -59,7 +59,9 @@ def main():
     print(f"  • Web Dashboard: http://localhost:{args.port}/")
     print(f"  • Swagger Docs:  http://localhost:{args.port}/docs")
     print(f"  • Data Storage:  {os.environ['SVECTRA_DATA_DIR']}")
-    print("=" * 64)
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+    if root_dir not in sys.path:
+        sys.path.insert(0, root_dir)
 
     uvicorn.run(
         "svectra.server.app:app",
@@ -67,6 +69,7 @@ def main():
         port=args.port,
         workers=args.workers,
         reload=args.reload,
+        app_dir=root_dir,
     )
 
 
